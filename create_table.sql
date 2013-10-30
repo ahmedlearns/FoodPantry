@@ -1,3 +1,9 @@
+create table bag (
+bagid int(20) auto_increment,
+name varchar(20) unique not null,
+primary key(bagid)
+);
+
 create table client (
 cid int(10) auto_increment,
 fname varchar(20),
@@ -15,7 +21,7 @@ zip int(5),
 apt int(5), 
 primary key (cid),
 foreign key (bagid) references bag(bagid),
-foreign key (pid) references pickup(pid),
+-- foreign key (pid) references pickup(pid),
 unique(fname, lname, phone)
 );
 
@@ -39,20 +45,21 @@ type tinyint(1),
 primary key (username)
 );
 
-create table bag (
-bagid int(20) auto_increment,
-name varchar(20) unique not null,
-primary key(bagid)
-);
-
 create table pickup (
 pid int(10) auto_increment,
 pdate date,
 cid int(20) not null,
 bagid int(20) not null,
 primary key (pid),
-forign key (cid) references client(cid),
+foreign key (cid) references client(cid),
 foreign key (bagid) references bag(bagid)
+);
+
+
+create table source(
+sourceid int(10) auto_increment,
+name varchar(20) unique not null, 
+primary key(sourceid)
 );
 
 create table product (
@@ -62,12 +69,6 @@ cost int(6),
 sourceid int(10) not null,
 primary key (prodid),
 foreign key (sourceid) references source(sourceid)
-);
-
-create table source(
-sourceid int(10) auto_increment,
-name varchar(20) unique not null, 
-primary key(sourceid)
 );
 
 create table dropoff(
@@ -91,6 +92,8 @@ foreign key (bagid) references bag(bagid),
 foreign key (prodid) references product(prodid)
 );
 
+
+
 create table aidsrc(
 aid int(10) auto_increment,
 name varchar(20) unique not null,
@@ -107,6 +110,6 @@ foreign key (aid) references aidsrc(aid)
 );
 
 
-insert into Client values
-(null,'Ahmed', 'Evan', 12341253, 'm', '1991-07-26', '1991-07-26', 2, 2, '123 Example St.', 'NoWhere', 'AK', 11311, 123);
+-- insert into Client values
+-- (null,'Ahmed', 'Evan', 12341253, 'm', '1991-07-26', '1991-07-26', 2, 2, '123 Example St.', 'NoWhere', 'AK', 11311, 123);
 
