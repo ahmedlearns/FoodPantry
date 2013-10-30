@@ -31,7 +31,8 @@ fname varchar(20),
 lname varchar(20), 
 dob date, 
 gender char(1),
-primary key (fname, lname),
+-- ADDED cid AS A PRIMARY KEY BECAUSE family IS A WEAK ENTITY TYPE
+primary key (fname, lname, cid),
 foreign key (cid) references client(cid)
 );
 

@@ -35,9 +35,30 @@ $cid = sql(SELECT cid FROM client WHERE fname = $firstName, lname = $lastName, p
 foreach ($finAid as $source)
   sql(INSERT INTO finaid VALUES($cid, $source));
 
+-- Search Client
+$lastName = getLastName();
+$phoneNumber = getNumber();
+
+$num_members = sql(SELECT COUNT(*) AS size FROM family GROUP BY cid);
+$cid = sql(SELECT lname, fname, size, address, phone, start FROM client INNER JOIN $num_members ON $num_members.cid = client.cid WHERE lname = $lastName OR phone = $phoneNumber GROUP BY cid);
+
+-- Add Family
+$members = getMembers();
+$cid = getCid();
+
+if(isClicked(save_button)){
+    foreach ($members as $famMember){
+        sql(INSERT INTO family VALUES ($cid, $members["First Name"], $members["Last Name"], $members["Date of Birth"], $members["Gender"]));
+    }
+}
+
+goToMainMenu();
 
 --Bag Related Stuff--
 ---------------------
+-- View Bag
+
+
 
 --Product related stuff--
 -------------------------
