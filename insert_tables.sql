@@ -77,5 +77,30 @@ sql(SELECT name, numItems, numClients, cost
             ON $numItems.bagid = bag.bagid
 );
 
+$viewEditBag = getBag(); -- $viewEditBag will store the bagid of the bag to view or edit
+
+-- Edit Bag
+sql(SELECT p.name AS "Product Name", c.qty AS "Quantity" 
+    FROM contents c
+        INNER JOIN  product p
+            ON  p.prodid = c.prodid
+    WHERE c.bagid = $viewEditBag
+);
+
+if(getEditProduct() is not null){
+    enableFields(); -- Allow the user to edit any of the fields.
+    if(saveisClicked()){
+        $productName = getProductName();
+        $productID = sql(SELECT prodid FROM product WHERE name = $productName);
+        $productQuant = getProductQuant($productID);
+        if($productQuant == 0 && $productID != null){
+            sql(DELETE * FROM contents WHERE bagid = $viewEditBag AND prodid = $productID);
+        } else { -- (User edited the quantity of a product that's already there or a new product)
+            $prevProdQuant = sql(SELECT qty FROM contents WHERE bagid = $viewEditBag AND $prodid = $productID); -- Can be null
+            sql(INSERT INTO contents VALUES($viewEditBag, $productID, $productQuant, $prevProdQuant));
+        }
+    }
+}
+
 --Product related stuff--
 -------------------------
