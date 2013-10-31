@@ -93,8 +93,6 @@ foreign key (bagid) references bag(bagid),
 foreign key (prodid) references product(prodid)
 );
 
-
-
 create table aidsrc(
 aid int(10) auto_increment,
 name varchar(20) unique not null,
