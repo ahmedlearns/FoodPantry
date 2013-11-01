@@ -1,0 +1,13 @@
+Contributions
+
+Ahmed & Evan
+============
+create_table, insert_tables
+
+Ahmed, Evan, & Christina
+======================
+Log In, New Client, Search Client
+
+Christina
+=========
+Relational Schema Diagram
