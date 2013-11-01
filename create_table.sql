@@ -109,6 +109,68 @@ foreign key (aid) references aidsrc(aid)
 );
 
 
--- insert into Client values
--- (null,'Ahmed', 'Evan', 12341253, 'm', '1991-07-26', '1991-07-26', 2, 2, '123 Example St.', 'NoWhere', 'AK', 11311, 123);
+CREATE VIEW bagclients AS
+SELECT bagid,
+            COUNT(*) AS numClients
+     FROM client
+     GROUP BY bagid;
 
+
+CREATE VIEW baginfo AS
+  SELECT b.bagid,
+         b.name,
+         SUM(c.qty * p.cost) AS cost,
+         SUM(qty) AS numItems,
+         numClients
+    FROM contents c
+    JOIN bag b ON c.bagid = b.bagid
+    INNER JOIN product p ON c.prodid = p.prodid
+    LEFT JOIN bagclients cl ON cl.bagid = b.bagid
+    GROUP BY b.bagid;
+
+CREATE VIEW oldbaginfo AS
+  SELECT b.bagid,
+         b.name,
+         SUM(c.prevqty * p.cost) AS cost,
+         SUM(prevqty) AS numItems,
+         numClients
+    FROM contents c
+    JOIN bag b ON c.bagid = b.bagid
+    INNER JOIN product p ON c.prodid = p.prodid
+    LEFT JOIN bagclients cl ON cl.bagid = b.bagid
+    GROUP BY b.bagid;
+
+
+--TESTING RELATED CODE
+
+INSERT INTO bag VALUES(null, "Test Bag");
+INSERT INTO bag VALUES(null, "Test Bag2");
+INSERT INTO source VALUES(null, "Publixs");
+INSERT INTO product VALUES(null, "Peaches", 2, 1);
+INSERT INTO product VALUES(null, "Grapes", 8, 1);
+INSERT INTO product VALUES(null, "Apple", 3, 1);
+INSERT INTO contents VALUES(1, 1, 3, 0);
+INSERT INTO contents VALUES(1, 2, 10, 0);
+INSERT INTO contents VALUES(2, 1, 7, 0);
+INSERT INTO contents VALUES(2, 2, 4, 0);
+
+
+INSERT INTO client VALUES(
+    null, "Evan", "Cahill", null, null, MAKEDATE(1993,5), null, 5, 1, null, null, null, null, null
+);
+
+INSERT INTO client VALUES(
+    null, "Kim", "Cahill", null, null, MAKEDATE(1999,5), null, 15, 2, null, null, null, null, null
+);
+
+INSERT INTO client VALUES(
+    null, "Robert", "Cahill", null, null,  MAKEDATE(1980,5), null, 6, 1, null, null, null, null, null
+);
+
+INSERT INTO family VALUES(1, "Addison", "Cahill" ,NOW(), null);
+INSERT INTO family VALUES(1, "Someone", "Cahill" ,NOW(), null);
+INSERT INTO family VALUES(1, "Danielle", "Cahill" ,MAKEDATE(1995,5), null);
+
+
+INSERT INTO pickup VALUES(null, NOW(), 1, 1);
+INSERT INTO dropoff VALUES(null, NOW(), 10, 1, 1);
