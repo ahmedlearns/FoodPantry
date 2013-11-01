@@ -7,8 +7,9 @@ $password = hash(getPassword());
 $result = sql(SELECT password FROM user WHERE username = $username);
 
 if ($result not empty) {
-    if($password == $result["password"]) loginOK();
+    if($password == hash($result["password"])) goToMainMenu();
 }
+echo "Username and password do not match";
 
 
 --Client Related Stuff--
@@ -30,29 +31,38 @@ $pickupDay = getPickupDate();
 $finAid = getFinaids();
 //$delivery = getDelivery();
 
-sql(INSERT INTO client VALUES(null, $firstName, $lastName, $number, $gender, $dob, $startDate, $pickupDate, $bag, $street, $city, $state, $zip, $aptNum));
-$cid = sql(SELECT cid FROM client WHERE fname = $firstName, lname = $lastName, phone = $phoneNumber);
-foreach ($finAid as $source)
-  sql(INSERT INTO finaid VALUES($cid, $source));
+function onSave() {
+    sql(INSERT INTO client VALUES(null, $firstName, $lastName, $number, $gender, $dob, $startDate, $pickupDate, $bag, $street, $city, $state, $zip, $aptNum));
+    $cid = sql(SELECT cid FROM client WHERE fname = $firstName, lname = $lastName, phone = $phoneNumber);
+    foreach ($finAid as $source)
+      sql(INSERT INTO finaid VALUES($cid, $source));
+      goToAddFamily();
+}
+
+
 
 -- Search Client
 $lastName = getLastName();
 $phoneNumber = getNumber();
 
 $num_members = sql(SELECT COUNT(*) AS size FROM family GROUP BY cid);
-$cid = sql(SELECT lname, fname, size, address, phone, start FROM client INNER JOIN $num_members ON $num_members.cid = client.cid WHERE lname = $lastName OR phone = $phoneNumber);
+$cid = sql(
+    SELECT c.lname, c.fname, COUNT(f.cid) + 1 AS size, street, city, state, zip, apt, phone, start
+    FROM client c LEFT JOIN family f ON c.cid = f.cid
+    WHERE c.lname = $lastName OR c.phone = $phoneNumber
+    GROUP BY c.cid;
+);
 
 -- Add Family
 $members = getMembers();
 $cid = getCid();
 
-if(isClicked(save_button)){
+function onSave() {
     foreach ($members as $famMember){
         sql(INSERT INTO family VALUES ($cid, $famMember["FirstName"], $famMember["LastName"], $famMember["DateofBirth"], $famMember["Gender"]));
     }
+    goToMainMenu();
 }
-
-goToMainMenu();
 
 --Bag Related Stuff--
 ---------------------
@@ -68,8 +78,8 @@ $all_bags = sql(
     LEFT JOIN
     (SELECT bagid,
             COUNT(ISNULL(*)) AS numClients
-     FROM client
-     GROUP BY bagid) AS cl ON cl.bagid = b.bagid
+    FROM client
+    GROUP BY bagid) AS cl ON cl.bagid = b.bagid
     GROUP BY b.bagid;);
 
 $viewEditBag = getBag(); -- $viewEditBag will store the bagid of the bag to view or edit
@@ -98,16 +108,16 @@ function onSaveClick() {
 -------------------------
 -- List All Products
 $allProducts = sql(
-    SELECT name, dqty - pqty AS total
+    SELECT name, COALESCE(dqty, 0) - COALESCE(pqty, 0) AS total
     FROM product p
     LEFT JOIN
     (SELECT prodid, SUM(qty) AS pqty
-        FROM pickup pu 
-        JOIN contents c ON pu.bagid = c.bagid GROUP BY prodid) AS pu
+     FROM pickup pu 
+     JOIN contents c ON pu.bagid = c.bagid GROUP BY prodid) AS pu
     ON p.prodid = pu.prodid
     LEFT JOIN
     (SELECT prodid, SUM(qty) AS dqty
-      FROM dropoff GROUP BY prodid) AS d
+     FROM dropoff GROUP BY prodid) AS d
     ON p.prodid = d.prodid;
 );
 
@@ -170,13 +180,64 @@ $lastReportData = sql(
 );
 
 
--- Monthly service report
+-- Grocery List
+$groceryList = sql(
+    SELECT name, SUM(qty) AS qty, SUM(prevqty) AS prevqty
+    FROM product p JOIN contents c ON p.prodid = c.prodid 
+    GROUP BY p.prodid;
+);
 
 
 
+--Pickup/Dropoff stuff--
+------------------------
+
+-- Pickup
+$dayOfMonth = getDayOfMonth();
+$pickupsToday = sql(
+    SELECT c.lname, c.fname, COUNT(f.cid) + 1 AS size, street, city, state, zip, apt, phone, start, bagid, pday
+    FROM client c LEFT JOIN family f ON c.cid = f.cid
+    WHERE pday = $dayOfMonth;
+);
+
+function onReturn() {
+    goToMainMenu();
+}
+
+function onSignIn() {
+    $clientInfo = getSelectedClient();
+    goToPickupConfirm($clientInfo);
+}
 
 
+-- Pickup Confirmation
+$clientInfo = getClientInfo();
 
+$pickupData = sql(
+    SELECT p.name, c.qty 
+    FROM client cl JOIN bag b on cl.bagid = b.bagid
+    JOIN contents c ON c.bagid = cl.bagid
+    JOIN product p ON p.prodid = c.prodid 
+    WHERE cid = $clientInfo["cid"];
+);
+
+function onComplete() {
+    -- note date is a php function
+    sql(INSERT INTO pickup VALUES(null, STR_TO_DATE(date(m)+" "$clientInfo["pday"]+" "+date(Y), "%m %d %Y"), $clientInfo["cid"], $clientInfo["bagid"]););
+    goToPickups();
+}
+
+function onReturn() {
+    goToMainMenu();
+}
+
+
+-- Drop Off
+$productList = sql(SELECT p.name, p.prodid, s.name, s.sourceid FROM product p JOIN source s ON p.sourceid = s.sourceid;);
+--list is shown to users with quatity editable
+$dropoffs = getDropoffs();
+foreach ($dropoffs as $dropoff)
+    sql(INSERT INTO dropoff VALUES(null, NOW(), $dropoff["qty"], $dropoff["sourceid"], $dropoff["prodid"]););
 
 
 
