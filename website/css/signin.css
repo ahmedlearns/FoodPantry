@@ -10,8 +10,18 @@ body {
   margin: 0 auto;
 }
 
-.form-signin-heading{
+img.form-signin-heading {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 20px;
+  height: 50%;
+  width: 50%;
+}
+
+.img-header {
   text-align: center;
+  /*content:url(img/header/title.png);*/
   margin-bottom: 20px;
 }
 
