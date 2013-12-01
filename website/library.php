@@ -1,12 +1,15 @@
 <?php
 
+  //require '_header.php';
+
   function logIn($username, $password) {
     $query = $db->query("SELECT * FROM user WHERE username = $username");
     $result = $query->fetch();
-    
-    if ($password == $result['password']) {
-      $_SESSION['userdata'] = $result[0];
-      return true;
+    if(!empty($result)){
+      if ($password == $result['password']) {
+        $_SESSION['userdata'] = $result[0];
+        return true;
+      }
     }
     return false;
   }
