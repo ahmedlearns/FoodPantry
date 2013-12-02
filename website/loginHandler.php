@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 	<head>
 	<title>Form</title>
@@ -6,8 +7,9 @@
 	<body>
 
 	<?php
+	include '/library.php';
+	echo getcwd();
 	echo "made it 1";
-	include 'library.php';
 	$username = $_POST["username"];
 	$password = $_POST["password"];
 	echo "made it 3";
@@ -17,8 +19,10 @@
 		echo "Fail :(";
 	}
 
+
 	?>
+	<!--<meta http-equiv="refresh" content="0;url=home.html">-->
 
 	</body>
-	</html>
+</html>
 	
