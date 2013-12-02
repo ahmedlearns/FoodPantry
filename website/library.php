@@ -119,6 +119,13 @@
         $query->execute($product);
   }
 
-  
-
+  //****************************************************************************
+  //***************** Useful Scripts not neccisarily databases *****************
+  //****************************************************************************
+  function redirect($url, $cond = true, $die=true) {
+    if ($cond) {
+      header("Location: $url");
+      if ($die) die();
+    }
+  }
 ?>
