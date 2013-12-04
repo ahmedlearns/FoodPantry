@@ -7,17 +7,14 @@
 	<body>
 
 	<?php
-	include '/library.php';
-	echo getcwd();
-	echo "made it 1";
+	ini_set("display_errors", "on");
+	error_reporting(E_ALL);
+	include "_header.php";
 	$username = $_POST["username"];
 	$password = $_POST["password"];
-	echo "made it 3";
-	if(logIn($username, $password)){
-		echo "<h1>Hello " . $_POST["username"] . "</h1>";
-	} else {
-		echo "Fail :(";
-	}
+	redirect("home.html", logIn($username, $password));
+	setError("Incorrect username or password");
+	redirect("index.php");
 
 
 	?>
