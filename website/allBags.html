@@ -60,55 +60,27 @@
       </div>
       
       <div class="row">
-        <div class="col-md-2 col-md-offset-7">
-          <i><b><span id="month">September 2013</span></b></i>
-        </div>
-      </div>
-      <br>      
-      <div class="row">
         <div class="col-md-9">
-          <form action="_saveBag.php" method="get">
-            <table class="table table-bordered table-striped">
-              <thead>
-                <tr>
-                  <th>Edit</th>
-                  <th>Product Name</th>
-                  <th>Quantity</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><center><button type="button" class="btn btn-default">Edit</button></center></td>
-                  <td>
-                    <input type="text" disabled name="products[0][prodid]" value="Peaches" class="form-control">
-                  </td>
-                  <td><input type="number" disabled name="products[0][quantity]" min="0" value=10 class="form-control"></input></td>
-                </tr>
-                <tr>
-                  <td><center><button type="button" class="btn btn-default">Edit</button></center></td>
-                  <td>
-                    <input type="text" disabled name="products[1][prodid]" value="Peaches" class="form-control">
-                  </td>
-                  <td><input type="number" disabled name="products[1][quantity]" min="0" value=10 class="form-control"></input></td>
-                </tr>
-                <tr>
-                  <td><center><button type="button" class="btn btn-default">Edit</button></center></td>
-                  <td>
-                    <select name="products[2][prodid]" class="form-control">
-                      <option value=1 data-source="Kroger">Product 1</option>
-                      <option>Test</option>
-                      <option>Test</option>
-                    </select>
-                  </td>
-                  <td><input type="number" name="products[2][quantity]" min="0" class="form-control"></input></td>
-                </tr>
-                <tr>
-                  <td colspan=3><center><button type="button" class="btn btn-default">Add Product</button></center></td>
-                </tr>
-              </tbody>
-            </table>
-            <button type="submit" class="btn btn-primary">Save Bag</button>
-          </form>
+          <table class="table table-bordered table-striped">
+            <thead>
+              <tr>
+                <th>View/Edit</th>
+                <th>Bag Name</th>
+                <th># Items</th>
+                <th># Clients</th>
+                <th>Cost</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><center><a href="bagHome.php?bagid=0" class="btn btn-default">Go</a></center></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
       

@@ -34,8 +34,6 @@
 	$_SESSION["cid"] = $cid;
 
 	redirect("viewClient.php");
-	
-
 
 	?>
 	<!-- <meta http-equiv="refresh" content="0;url=home.html"> -->
