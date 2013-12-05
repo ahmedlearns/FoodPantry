@@ -28,19 +28,28 @@
     $insertQuery = $db->prepare("INSERT INTO client VALUES(".str_repeat("?, ", count($clientArray) - 1)." ?)");
 		$insertQuery->execute($clientArray);
 		
-    $query = $db->query("SELECT cid FROM client WHERE fname =".$clientArray['fname']. 
-        ", lname =".$clientArray['lname'].", phone = ".$clientArray['phone']);
+    $query = $db->query("SELECT cid FROM client WHERE fname ='{$clientArray[1]}' AND lname ='{$clientArray[2]}' AND phone = '{$clientArray[3]}'");
     $result = $query->fetch();
     $cid = $result['cid'];
-        
-    foreach ($finaidArray as $source)
+    foreach ($finaidArray as $source){
       $db->query("INSERT INTO finaid VALUES($cid, $source)");
+    }
+
+    return $cid;
   }
   
   function searchClient($lname, $phone) {
     global $db;
-    $query = $db->query("SELECT c.lname, c.fname, COUNT(f.cid) + 1 AS size, street, city, state, zip, apt, phone, start FROM client c LEFT JOIN family f ON c.cid = f.cid WHERE c.lname = $lastName OR c.phone = $phoneNumber GROUP BY c.cid");
-    return $query->fetchAll();
+    if($lname == NULL){
+      $query = $db->query("SELECT c.lname, c.fname, COUNT(f.cid) + 1 AS size, street, city, state, zip, apt, phone, start FROM client c LEFT JOIN family f ON c.cid = f.cid WHERE c.phone = '$phone' GROUP BY c.cid");
+      return $query->fetchAll();
+    } else if ($phone == NULL){
+      $query = $db->query("SELECT c.lname, c.fname, COUNT(f.cid) + 1 AS size, street, city, state, zip, apt, phone, start FROM client c LEFT JOIN family f ON c.cid = f.cid WHERE c.lname = '$lname' GROUP BY c.cid");
+      return $query->fetchAll();
+    } else{
+      $query = $db->query("SELECT c.lname, c.fname, COUNT(f.cid) + 1 AS size, street, city, state, zip, apt, phone, start FROM client c LEFT JOIN family f ON c.cid = f.cid WHERE c.lname = '$lname' OR c.phone = '$phone' GROUP BY c.cid");
+      return $query->fetchAll();
+    }
   }
   
   //MembersArray {{fname,lname,dob,gender},{fname,lname,dob,gender}}
@@ -54,7 +63,7 @@
   
   function listBags() {
     global $db;
-    $query = $db->query("SELECT b.name, SUM(c.qty * p.cost) AS cost, SUM(qty) AS numItems, numClients FROM contents c JOIN bag b ON c.bagid = b.bagid INNER JOIN product p ON c.prodid = p.prodid LEFT JOIN (SELECT bagid, COUNT(ISNULL(*)) AS numClients FROM client GROUP BY bagid) AS cl ON cl.bagid = b.bagid GROUP BY b.bagid");
+    $query = $db->query("SELECT b.name, SUM(c.qty * p.cost) AS cost, SUM(qty) AS numItems, numClients FROM contents c JOIN bag b ON c.bagid = b.bagid INNER JOIN product p ON c.prodid = p.prodid LEFT JOIN (SELECT bagid, COUNT(*) AS numClients FROM client GROUP BY bagid) AS cl ON cl.bagid = b.bagid GROUP BY b.bagid");
     return $query->fetchAll();
   }
   
@@ -63,6 +72,86 @@
     $query = $db->query();
     return $query->fetchAll();
   
+  }
+
+  function makeBagDropDown()
+  {
+    global $db;
+    $query = $db->query("SELECT * FROM bag");
+    $result= $query->fetchAll();
+    $toReturn = "<select id='selectbasic' name='bagid' class='input-xlarge'>";
+    foreach ($result as $currBag)
+    {
+      $toReturn = $toReturn . "<option value = {$currBag['bagid']}>{$currBag['name']}</option>"; 
+    }
+    $toReturn = $toReturn . "</select>";
+    return $toReturn;
+  }
+
+  function makeSourceDropDown()
+  {
+    global $db;
+    $query = $db->query("SELECT * FROM source");
+    $result= $query->fetchAll();
+    $toReturn = "<select id='selectbasic' name='source' class='input-xlarge'>";
+    foreach ($result as $currSrc)
+    {
+      $toReturn = $toReturn . "<option value = {$currSrc['sourceid']}>{$currSrc['name']}</option>"; 
+    }
+    $toReturn = $toReturn . "</select>";
+    return $toReturn;
+  }
+
+  function makeFinaidList()
+  {
+    global $db;
+    $query = $db->query("SELECT aid, name FROM aidsrc");
+    $result = $query->fetchAll();
+    $toReturn = "<select id='selectmultiple' name='finaid[]' class='input-xlarge' multiple='multiple'>";
+    foreach($result as $currAid){
+      $toReturn = $toReturn . "<option value = {$currAid['aid']}>{$currAid['name']}</option>";
+    }
+    $toReturn = $toReturn . "</select>";
+    return $toReturn;
+  }
+
+  function makeProductDropDown()
+  {
+    global $db;
+    $query = $db->query("SELECT s.name as sname, p.name as pname, prodid FROM product p JOIN source s WHERE p.sourceid = s.sourceid");
+    $result= $query->fetchAll();
+    $toReturn = "<select id='selectbasic' name='prodid' class='input-xlarge'>";
+    foreach ($result as $currProd)
+    {
+      $toReturn = $toReturn . "<option value = {$currProd['prodid']}>{$currProd['pname']} from {$currProd['sname']}</option>"; 
+    }
+    $toReturn = $toReturn . "</select>";
+    return $toReturn;
+  }
+
+  function getBagNames()
+  {
+    global $db;
+    
+    $ind = 0;
+    foreach($result as $currArr){
+      $toReturn[$ind] = $currArr["name"];
+      $ind++;
+    }
+    return $toReturn;
+  }
+
+  function getBagID($bagName)
+  {
+    global $db;
+    $query = $db->query("SELECT bagid FROM bag WHERE bag.name = '$bagName'");
+    $result= $query->fetchAll();
+    $ind = 0;
+    foreach($result as $currArr){
+      $toReturn[$ind] = $currArr["bagid"];
+      $ind++;
+    }
+    return $toReturn;
   }
   
   function saveBag($bagid, $contentsArray) {
@@ -89,7 +178,7 @@
   //We control the source! a.k.a have a dropdown
   function addProduct($name, $cost, $sourceid) {
     global $db;
-    $db->query("INSERT INTO product VALUES(null, $name, $cost, $sourceid)");
+    $db->query("INSERT INTO product VALUES(null, '$name', '$cost', '$sourceid')");
   }
 
   function monthlyServiceReport() {
